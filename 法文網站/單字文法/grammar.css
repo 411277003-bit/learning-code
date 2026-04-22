@@ -1,0 +1,86 @@
+/* 摺疊面板 (Accordion) 樣式 */
+.accordion {
+    background-color: #f1f4f9;
+    color: #002395;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: 0.4s;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* 滑鼠經過或展開時的樣式 */
+.accordion.active, .accordion:hover {
+    background-color: #002395;
+    color: white;
+}
+
+/* 在按鈕右側加上 + 號與 - 號的視覺提示 */
+.accordion:after {
+    content: '\002B'; /* Unicode 的加號 */
+    font-size: 1.5rem;
+    float: right;
+    margin-left: 5px;
+}
+
+.accordion.active:after {
+    content: "\2212"; /* Unicode 的減號 */
+}
+
+/* 隱藏的內容面板 */
+.panel {
+    padding: 0 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 1rem;
+}
+
+.panel p {
+    margin-top: 1rem;
+    line-height: 1.6;
+}
+
+/* 文法表格樣式 (補充原本在單字表格裡用到的共用樣式) */
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.vocab-table th, .vocab-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.vocab-table th {
+    background-color: #f1f4f9;
+    color: #002395;
+    font-weight: 600;
+}
+
+.vocab-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.vocab-word {
+    font-weight: bold;
+    color: #ed2939;
+}
