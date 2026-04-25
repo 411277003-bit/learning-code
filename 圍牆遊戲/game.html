@@ -69,6 +69,12 @@
         .wall-yellow { background-color: var(--color-yellow) !important; }
         .wall-green { background-color: var(--color-green) !important; }
 
+        /* 領土顏色覆蓋效果 */
+        .territory-red { background-color: rgba(231, 76, 60, 0.3) !important; }
+        .territory-blue { background-color: rgba(52, 152, 219, 0.3) !important; }
+        .territory-yellow { background-color: rgba(241, 196, 15, 0.3) !important; }
+        .territory-green { background-color: rgba(46, 204, 113, 0.3) !important; }
+
         .highlight { background-color: var(--color-highlight) !important; cursor: pointer; opacity: 0.8; }
         .highlight-wall { background-color: var(--color-highlight-wall) !important; cursor: pointer; opacity: 0.8; }
         .selected { transform: scale(1.15); border: 3px solid #2c3e50; }
@@ -105,7 +111,6 @@
         const boardSize = 13; 
         let phase = 'placement'; 
         
-        // 🌟 讀取網址參數 (如果沒有帶參數，預設為 3 人)
         const urlParams = new URLSearchParams(window.location.search);
         let playerCount = parseInt(urlParams.get('players')) || 3;
         
@@ -119,6 +124,9 @@
         let walls = new Map(); 
         let playersInfo = {};
         let stepsTaken = 0;
+        
+        // 儲存各方領土地圖
+        let territories = new Map(); 
         
         const TURN_TIME_LIMIT = 90; 
         let playerTimes = {}; 
@@ -146,7 +154,7 @@
             window.location.href = 'index.html';
         }
 
-        // --- 遊戲邏輯 ---
+        //遊戲邏輯
         function resetGame() {
             clearInterval(clockInterval);
 
@@ -156,6 +164,7 @@
 
             pieces = [];
             walls.clear();
+            territories.clear(); 
             playersInfo = {};
             playerTimes = {};
             
@@ -200,7 +209,6 @@
             render();
         }
 
-        // --- 計時器與 AI 代管 ---
         function startClock() {
             clearInterval(clockInterval);
             if (phase === 'game_over') return;
@@ -268,8 +276,8 @@
                 turnIndex = (turnIndex + 1) % movementOrder.length;
                 
                 resetCurrentPlayerTimer(); 
-                render();
                 autoCheckEndGame(false); 
+                render();
                 if (phase !== 'game_over') startClock();
             }
         }
@@ -277,15 +285,26 @@
         function render() {
             document.querySelectorAll('.grid-item').forEach(el => {
                 el.innerHTML = '';
-                el.classList.remove('highlight', 'highlight-wall', 'wall-placed', 'selected', 'wall-red', 'wall-blue', 'wall-yellow', 'wall-green');
+                el.classList.remove('highlight', 'highlight-wall', 'wall-placed', 'selected', 'wall-red', 'wall-blue', 'wall-yellow', 'wall-green', 'territory-red', 'territory-blue', 'territory-yellow', 'territory-green');
             });
 
+            // 渲染牆壁
             walls.forEach((color, wKey) => {
                 const [wr, wc] = wKey.split(',').map(Number);
                 const wEl = getEl(wr, wc);
                 if (wEl) wEl.classList.add('wall-placed', `wall-${color}`);
             });
 
+            //修改：只有在遊戲結束階段，才渲染領土覆蓋層
+            if (phase === 'game_over') {
+                territories.forEach((color, tKey) => {
+                    const [tr, tc] = tKey.split(',').map(Number);
+                    const tEl = getEl(tr, tc);
+                    if (tEl) tEl.classList.add(`territory-${color}`);
+                });
+            }
+
+            //渲染棋子
             pieces.forEach((p, index) => {
                 const cell = getEl(p.r, p.c);
                 if (cell) {
@@ -363,7 +382,7 @@
             btnBreaker.disabled = (phase !== 'movement' || stepsTaken > 0 || !playersInfo[currentColor].hasBreaker);
         }
 
-        // --- 互動邏輯 ---
+        //互動邏輯
         function handleCellClick(r, c) {
             if (phase === 'game_over') return; 
 
@@ -441,6 +460,7 @@
                     const currentColor = movementOrder[turnIndex];
                     playersInfo[currentColor].hasBreaker = false; 
                     phase = 'movement'; 
+                    autoCheckEndGame(false); 
                     render();
                 }
             }
@@ -464,11 +484,11 @@
             
             resetCurrentPlayerTimer(); 
             
-            render();
             autoCheckEndGame(false); 
+            render();
         }
 
-        // --- 演算法 ---
+        //演算法
         function getValidMoves(startR, startC) {
             const validMoves = [];
             for (let r = 0; r < boardSize; r += 2) {
@@ -507,7 +527,7 @@
             return validWalls;
         }
 
-        // --- BFS 結算與紀錄儲存 ---
+        //BFS結算與紀錄儲存
         function autoCheckEndGame(forceCalculate = false) {
             if (phase === 'placement' && !forceCalculate) return;
 
@@ -518,6 +538,8 @@
             let visited = new Set();
             let hasMixedTerritory = false; 
 
+            territories.clear(); 
+
             for (let r = 0; r < boardSize; r += 2) {
                 for (let c = 0; c < boardSize; c += 2) {
                     if (visited.has(`${r},${c}`)) continue;
@@ -526,10 +548,12 @@
                     visited.add(`${r},${c}`);
                     let regionSize = 0;
                     let colorsInRegion = new Set(); 
+                    let regionCells = []; 
 
                     while(queue.length > 0) {
                         const curr = queue.shift();
                         regionSize++; 
+                        regionCells.push(curr); 
 
                         const pieceIdx = getPieceIndexAt(curr.r, curr.c);
                         if (pieceIdx !== -1) colorsInRegion.add(pieces[pieceIdx].color);
@@ -551,6 +575,8 @@
                     } else if (colorsInRegion.size === 1) {
                         const color = Array.from(colorsInRegion)[0];
                         scores[color] += regionSize;
+                        
+                        regionCells.forEach(cell => territories.set(`${cell.r},${cell.c}`, color));
                     }
                 }
             }
@@ -579,7 +605,7 @@
             if (gameOver) {
                 clearInterval(clockInterval); 
                 phase = 'game_over';
-                render(); 
+                render();
                 
                 let reason = "";
                 if (forceCalculate) reason = "因有玩家單步思考超時而強制提前結算";
@@ -587,7 +613,7 @@
                 
                 let scoreText = activeColors.map(c => `${colorMap[c].icon} ${colorMap[c].text}領土：${scores[c]} 格`).join('\n');
                 
-                // --- 💾 儲存歷史戰績到 localStorage ---
+                //儲存歷史戰績到 localStorage
                 let maxScore = -1;
                 let winners = [];
                 activeColors.forEach(c => {
@@ -615,13 +641,13 @@
                     alert(`🏆 遊戲結束！${reason}。\n\n${scoreText}`);
                 }, 150);
             }
-        } // ⬅️ 確保大括號在這裡正確關閉 autoCheckEndGame
+        }
 
-        // --- 工具函式 ---
+        //工具函式
         function getEl(r, c) { return document.querySelector(`[data-r="${r}"][data-c="${c}"]`); }
         function getPieceIndexAt(r, c) { return pieces.findIndex(p => p.r === r && p.c === c); }
 
-        // 初次載入
+        //初次載入
         resetGame();
     </script>
 </body>
