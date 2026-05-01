@@ -76,7 +76,7 @@
         .glass-card { background: var(--card-bg); padding: 35px 30px; border-radius: 20px; backdrop-filter: blur(12px); border: 1px solid var(--card-border); box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 380px; box-sizing: border-box; }
         .glass-card h3 { margin-top: 0; margin-bottom: 25px; font-size: 20px; text-align: center; font-weight: 600;}
 
-        .player-select-group { display: flex; justify-content: center; gap: 20px; margin-bottom: 35px; }
+        .player-select-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 35px; }
         .player-option { width: 65px; height: 65px; border-radius: 12px; border: 2px solid var(--gray-btn); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: all 0.2s; color: var(--text-sub); }
         .player-option:hover { background: rgba(255,255,255,0.05); color: white; transform: translateY(-2px);}
         .player-option.active { background: rgba(59, 130, 246, 0.1); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
@@ -211,11 +211,13 @@
             <p class="menu-subtitle">牆壁戰棋：極速對決版</p>
             
             <div class="glass-card">
-                <h3>選擇遊玩人數</h3>
+                <h3>選擇遊玩人數 / 模式</h3>
                 <div class="player-select-group">
-                    <div class="player-option" onclick="setPlayers(2)">2</div>
-                    <div class="player-option active" onclick="setPlayers(3)">3</div>
-                    <div class="player-option" onclick="setPlayers(4)">4</div>
+                    <!-- 🤖 加入了 vs AI 按鈕 -->
+                    <div class="player-option" data-val="ai" onclick="setPlayers('ai')" style="font-size: 15px; font-weight: bold;">vs AI</div>
+                    <div class="player-option" data-val="2" onclick="setPlayers(2)">2</div>
+                    <div class="player-option active" data-val="3" onclick="setPlayers(3)">3</div>
+                    <div class="player-option" data-val="4" onclick="setPlayers(4)">4</div>
                 </div>
                 
                 <div class="btn-group">
@@ -270,7 +272,7 @@
                 <div id="tab-info" class="tab-pane">
                     <h3 style="text-align: center; margin-top: 0; color: white;">系統資訊</h3>
                     <div class="info-row"><span class="info-label">遊戲名稱</span><span class="info-value">Wall Go</span></div>
-                    <div class="info-row"><span class="info-label">目前版本</span><span class="info-value">v4.5 首頁登入版</span></div>
+                    <div class="info-row"><span class="info-label">目前版本</span><span class="info-value">v4.6 終極單機版 (含 AI)</span></div>
                     <p style="font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 20px;">
                         前端模擬連線系統測試中。<br>可測試註冊帳號後重新登入。
                     </p>
@@ -536,11 +538,11 @@
         }
 
         let selectedPlayers = 3;
-        function setPlayers(num) {
-            selectedPlayers = num;
+        function setPlayers(val) {
+            selectedPlayers = val;
             document.querySelectorAll('.player-option').forEach(opt => {
                 opt.classList.remove('active');
-                if(parseInt(opt.innerText) === num) opt.classList.add('active');
+                if(opt.dataset.val == val) opt.classList.add('active');
             });
         }
         function startGame() { window.location.href = `game.html?players=${selectedPlayers}`; }
