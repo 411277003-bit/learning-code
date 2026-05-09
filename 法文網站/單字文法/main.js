@@ -368,82 +368,90 @@ function selectQuizType(type, btn) {
 // ==========================================
 async function generateListening() {
     const area = document.getElementById('listening-area');
-    area.innerHTML = `<div class="ai-loading"><div class="spinner"></div><p>AI 正在生成 ${currentListeningLevel} 等級的法文文章與題目…</p></div>`;
+    // 顯示載入動畫，讓體驗更真實
+    area.innerHTML = `<div class="ai-loading"><div class="spinner"></div><p>正在為您準備 ${currentListeningLevel} 等級的聽力練習…</p></div>`;
 
-    const levelGuide = {
-        A1: '非常簡單，約60個單字，使用現在式，主題為日常問候/家庭/顏色',
-        A2: '簡單，約100個單字，可使用複合過去式，主題為購物/交通/飲食',
-        B1: '中等，約150個單字，可使用多種時態，主題為工作/旅行/社會',
-        B2: '較難，約200個單字，使用豐富詞彙與複雜句型，主題為社會議題/文化'
-    };
+    setTimeout(() => {
+        // 1. 建立聽力微型題庫 (包含 A1 到 B2)
+        const mockListeningDatabase = [
+            // --- A1 聽力練習 ---
+            {
+                level: "A1",
+                title: "Ma nouvelle routine",
+                article: "Bonjour, je m'appelle Sophie. Le matin, je bois un café et je mange un croissant. Ensuite, je vais au travail en métro. Le soir, je regarde la télévision avec mon chat.",
+                questions: [
+                    { type: "qcm", question: "Comment Sophie va-t-elle au travail ?", options: ["En bus", "En métro", "À pied", "En voiture"], answer: 1 },
+                    { type: "vrai_faux", question: "Sophie regarde la télévision avec son chien.", answer: false }
+                ]
+            },
+            {
+                level: "A1",
+                title: "La famille de Lucas",
+                article: "Voici ma famille. Mon père s'appelle Marc, il est grand. Ma mère s'appelle Julie. J'ai un petit frère, Léo. Le week-end, nous allons au parc ensemble.",
+                questions: [
+                    { type: "qcm", question: "Comment s'appelle le petit frère ?", options: ["Marc", "Lucas", "Léo", "Julien"], answer: 2 },
+                    { type: "vrai_faux", question: "Le week-end, ils vont au supermarché.", answer: false }
+                ]
+            },
 
-    const prompt = `Tu es un professeur de français. Génère un exercice de compréhension orale pour des apprenants de niveau ${currentListeningLevel}.
+            // --- A2 聽力練習 ---
+            {
+                level: "A2",
+                title: "Les vacances à Nice",
+                article: "L'été dernier, nous sommes allés à Nice dans le sud de la France. Il a fait très beau tous les jours. L'après-midi, nous avons nagé dans la mer et visité la vieille ville. Le soir, nous avons mangé dans un bon restaurant près de la plage. C'était des vacances superbes !",
+                questions: [
+                    { type: "qcm", question: "Où ont-ils mangé le soir ?", options: ["À l'hôtel", "Chez des amis", "Au restaurant", "Dans la rue"], answer: 2 },
+                    { type: "vrai_faux", question: "Ils ont visité la vieille ville de Nice.", answer: true }
+                ]
+            },
 
-Niveau: ${currentListeningLevel} (${levelGuide[currentListeningLevel]})
+            // --- B1 聽力練習 ---
+            {
+                level: "B1",
+                title: "Le télétravail",
+                article: "Depuis quelques années, le télétravail est devenu très populaire. Beaucoup d'employés préfèrent travailler de chez eux parce qu'ils ne perdent pas de temps dans les transports. Cependant, certains trouvent qu'il est difficile de séparer la vie professionnelle et la vie privée. Il faut une très bonne organisation.",
+                questions: [
+                    { type: "qcm", question: "Quel est un avantage du télétravail selon le texte ?", options: ["On gagne plus d'argent", "On ne perd pas de temps dans les transports", "On voit plus ses collègues", "On mange mieux"], answer: 1 },
+                    { type: "vrai_faux", question: "Le télétravail ne demande aucune organisation.", answer: false }
+                ]
+            },
 
-Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans backticks), avec cette structure exacte:
-{
-  "title": "titre de l'article en français",
-  "article": "le texte de l'article en français (adapté au niveau ${currentListeningLevel})",
-  "questions": [
-    {
-      "type": "qcm",
-      "question": "question en français",
-      "options": ["option A", "option B", "option C", "option D"],
-      "answer": 0
-    },
-    {
-      "type": "vrai_faux",
-      "question": "affirmation en français",
-      "answer": true
-    },
-    {
-      "type": "vrai_faux",
-      "question": "affirmation en français",
-      "answer": false
-    },
-    {
-      "type": "qcm",
-      "question": "autre question en français",
-      "options": ["option A", "option B", "option C", "option D"],
-      "answer": 2
-    },
-    {
-      "type": "ordre",
-      "question": "Remettez ces événements dans l'ordre chronologique selon le texte（根據文章排列正確順序）",
-      "items": ["événement C", "événement A", "événement B", "événement D"],
-      "correctOrder": [1, 2, 0, 3]
-    }
-  ]
-}`;
+            // --- B2 聽力練習 ---
+            {
+                level: "B2",
+                title: "L'impact des réseaux sociaux",
+                article: "L'omniprésence des réseaux sociaux soulève de nombreuses questions sociétales. S'ils facilitent incontestablement la communication instantanée et la diffusion de l'information, ils engendrent également de nouveaux défis. La désinformation, la cyberintimidation et l'addiction numérique sont des phénomènes préoccupants qui nécessitent une régulation plus stricte et une éducation aux médias dès le plus jeune âge.",
+                questions: [
+                    { type: "qcm", question: "Que nécessitent les défis posés par les réseaux sociaux selon le texte ?", options: ["Une suppression totale d'Internet", "Une régulation plus stricte et une éducation", "Moins de communication", "De nouveaux algorithmes secrets"], answer: 1 },
+                    { type: "vrai_faux", question: "Le texte affirme que les réseaux sociaux n'ont que des aspects négatifs.", answer: false }
+                ]
+            }
+        ];
 
-    try {
-        // 替換成你剛剛在 Cloudflare 複製的專屬網址
-        const response = await fetch("https://french-tutor-api.<你的帳號>.workers.dev", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "claude-3-5-sonnet-20241022",
-                max_tokens: 1500,
-                messages: [{ role: "user", content: prompt }]
-            })
-        });
+        // 2. 根據目前選擇的等級過濾題庫
+        let filteredExercises = mockListeningDatabase.filter(ex => ex.level === currentListeningLevel);
 
-        const data = await response.json();
-        let text = data.content.map(i => i.text || '').join('');
-        text = text.replace(/```json|```/g, '').trim();
-        const exercise = JSON.parse(text);
-        currentExercise = exercise;
+        let selectedExercise;
+        if (filteredExercises.length > 0) {
+            // 3. 從符合等級的題庫中隨機抽取一篇
+            const randomIndex = Math.floor(Math.random() * filteredExercises.length);
+            selectedExercise = filteredExercises[randomIndex];
+        } else {
+            // 防呆機制：如果該等級剛好沒題目
+            selectedExercise = {
+                title: "暫無內容",
+                article: "Désolé, il n'y a pas d'exercice pour ce niveau actuellement.",
+                questions: []
+            };
+        }
+
+        // 4. 重置計分與狀態，並渲染畫面
+        currentExercise = selectedExercise;
         answeredCount = 0;
         correctCount = 0;
-        renderListeningExercise(exercise);
-    } catch (err) {
-        area.innerHTML = `<div class="listening-placeholder">
-            <div class="placeholder-icon">⚠️</div>
-            <p>生成失敗，請稍後再試。錯誤：${err.message}</p>
-            <button class="btn-primary" onclick="generateListening()">重試</button>
-        </div>`;
-    }
+        renderListeningExercise(selectedExercise);
+
+    }, 800); // 模擬 0.8 秒的載入時間
 }
 
 function renderListeningExercise(exercise) {
@@ -680,49 +688,60 @@ function updateScore() {
 // ==========================================
 async function generateQuiz() {
     const area = document.getElementById('quiz-area');
-    area.innerHTML = `<div class="ai-loading"><div class="spinner"></div><p>AI 正在生成 ${currentQuizLevel} 等級的${currentQuizType}題目…</p></div>`;
+    area.innerHTML = `<div class="ai-loading"><div class="spinner"></div><p>載入測試題目中…</p></div>`;
 
-    const typeInstruction = {
-        '選擇題': `Generate 5 multiple choice questions (type "qcm") with 4 options each. Format: {"type":"qcm","question":"...","options":["A","B","C","D"],"answer":0,"explanation":"..."}`,
-        '填空題': `Generate 5 fill-in-the-blank questions (type "fill"). Format: {"type":"fill","question":"Complete: ___ suis étudiant.","answer":"Je","hint":"1ère personne du singulier"}`,
-        '是非題': `Generate 6 true/false questions (type "vrai_faux"). Format: {"type":"vrai_faux","question":"...","answer":true,"explanation":"..."}`
-    };
+    setTimeout(() => {
+        // 1. 建立一個微型假題庫，包含不同等級與題型
+        const mockDatabase = [
+            // --- A1 題目 ---
+            { type: "qcm", level: "A1", question: "Comment dit-on 'Hello' en français ?", options: ["Merci", "Bonjour", "Au revoir", "Pardon"], answer: 1, explanation: "Bonjour 是法文最標準的打招呼用語。" },
+            { type: "qcm", level: "A1", question: "Quel est le jour après lundi ? (星期一的下一天是？)", options: ["Mardi", "Mercredi", "Jeudi", "Vendredi"], answer: 0, explanation: "Lundi (一), Mardi (二)." },
+            { type: "fill", level: "A1", question: "___ m'appelle Thomas.", answer: "Je", hint: "第一人稱單數" },
+            { type: "vrai_faux", level: "A1", question: "Paris est la capitale de la France. (巴黎是法國首都)", answer: true, explanation: "完全正確！" },
+            
+            // --- A2 題目 ---
+            { type: "qcm", level: "A2", question: "Je ___ au cinéma hier. (我昨天去電影院)", options: ["vais", "suis allé", "allais", "irai"], answer: 1, explanation: "昨天發生的事要用複合過去式 (Passé composé)。" },
+            { type: "fill", level: "A2", question: "Nous ___ mangé une pizza. (我們吃了一個披薩)", answer: "avons", hint: "Avoir 的第一人稱複數現在式" },
+            { type: "vrai_faux", level: "A2", question: "Le Soleil tourne autour de la Terre. (太陽繞著地球轉)", answer: false, explanation: "是地球繞著太陽轉喔！" },
 
-    const prompt = `Tu es un professeur de français. Génère un quiz de niveau ${currentQuizLevel} en français pour des apprenants taïwanais.
+            // --- B1 題目 ---
+            { type: "qcm", level: "B1", question: "Il faut que tu ___ tes devoirs. (你必須做功課)", options: ["fais", "faisais", "fasses", "feras"], answer: 2, explanation: "'Il faut que' 後面必須接虛擬式 (Subjonctif)。" },
+            { type: "fill", level: "B1", question: "Si j'avais de l'argent, j'___ une voiture. (如果我有錢，我就會買車)", answer: "achèterais", hint: "條件式現在式 (Conditionnel présent)" },
+            
+            // --- B2 題目 ---
+            { type: "vrai_faux", level: "B2", question: "Le subjonctif exprime toujours une certitude. (虛擬式總是表達確定的事)", answer: false, explanation: "虛擬式通常用來表達懷疑、情感或不確定性。" }
+        ];
 
-${typeInstruction[currentQuizType]}
+        // 2. 將中文介面的題型對應到資料庫的 type
+        let typeKey = "qcm";
+        if (currentQuizType === '填空題') typeKey = "fill";
+        if (currentQuizType === '是非題') typeKey = "vrai_faux";
 
-Réponds UNIQUEMENT avec un JSON valide sans markdown:
-{
-  "title": "titre du quiz",
-  "questions": [ ... array of questions as described above ... ]
-}`;
+        // 3. 根據你目前選擇的「等級」與「題型」來過濾題目
+        let filteredQs = mockDatabase.filter(q => q.type === typeKey && q.level === currentQuizLevel);
 
-    try {
-        const response = await fetch("https://french-tutor-api.411277003.workers.dev/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "claude-3-5-sonnet-20241022",
-                max_tokens: 2000,
-                messages: [{ role: "user", content: prompt }]
-            })
-        });
+        // 4. 隨機洗牌，並抽出最多 2 題展示（模擬每次都不一樣）
+        if (filteredQs.length > 0) {
+            filteredQs = filteredQs.sort(() => 0.5 - Math.random()).slice(0, 2);
+        } else {
+            // 如果題庫剛好沒配對到這組條件，給一個防呆提示題
+            filteredQs = [{ 
+                type: "qcm", 
+                question: "這個等級與題型的組合目前在測試題庫中沒有題目喔！請嘗試切換其他選項。", 
+                options: ["好", "了解", "OK", "沒問題"], 
+                answer: 0 
+            }];
+        }
 
-        const data = await response.json();
-        let text = data.content.map(i => i.text || '').join('');
-        text = text.replace(/```json|```/g, '').trim();
-        const quiz = JSON.parse(text);
-        renderQuiz(quiz);
-    } catch (err) {
-        area.innerHTML = `<div class="listening-placeholder">
-            <div class="placeholder-icon">⚠️</div>
-            <p>生成失敗，請稍後再試。</p>
-            <button class="btn-primary" onclick="generateQuiz()">重試</button>
-        </div>`;
-    }
+        // 5. 渲染題目到畫面上
+        const mockQuiz = {
+            "title": `Test de niveau - ${currentQuizLevel}`,
+            "questions": filteredQs
+        };
+        
+        renderQuiz(mockQuiz);
+    }, 600); // 模擬 0.6 秒的網路延遲
 }
-
 function renderQuiz(quiz) {
     const area = document.getElementById('quiz-area');
     answeredCount = 0;
